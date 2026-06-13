@@ -19,46 +19,52 @@ using TactileDataCallback = std::function<void(const TactileData&)>;
 /**
  * @brief Communication abstraction interface
  *
- * Provides a unified business-level communication interface for EtherCAT/CANFD/RS485.
- * Implementations handle underlying protocol differences and provide standardized device operations to upper layers.
+ * Provides a unified business-level communication interface for
+ * EtherCAT/CANFD/RS485.
+ * Implementations handle underlying protocol differences and provide
+ * standardized device operations to upper layers.
  */
 class IComm {
  public:
   virtual ~IComm() = default;
 
-  // ===== Connection Management =====
+  // Connection management
   virtual int Connect(const std::string& device_name) = 0;
   virtual int Disconnect() = 0;
   virtual bool IsConnected() const = 0;
   virtual std::map<std::string, std::string> SearchAdapters() = 0;
 
-  // ===== Device Info =====
+  // Device info
   virtual DeviceInfo GetDeviceInfo() = 0;
   virtual HandType GetHandType() = 0;
 
-  // ===== Motion Control =====
+  // Motion control
   virtual bool MoveJoints(const std::vector<JointCommand>& joints,
                           ControlMode mode) = 0;
   virtual void Stop() = 0;
 
-  // ===== System Operations =====
+  // System operations
   virtual bool ClearFault() = 0;
   virtual bool InitJoint() = 0;
 
-  // ===== Tactile Sensor =====
+  // Tactile sensor
   virtual bool OpenTactile() = 0;
   virtual bool CloseTactile() = 0;
   virtual bool ZeroTactile() = 0;
 
-  // ===== Data Callbacks =====
+  // Data callbacks
   virtual void SetJointsCallback(JointsCallback cb) = 0;
   virtual void SetHandStateCallback(HandStateCallback cb) = 0;
   virtual void SetTactileDataCallback(TactileDataCallback cb) = 0;
 
-  // ===== Firmware Update =====
-  virtual int BootUpdate(const std::string& device_name, uint16_t slave,
-                         const std::string& filename,
-                         std::function<void(int)> progress) = 0;
+  // Firmware update
+  virtual FirmwareUpdateError BootUpdate(
+      const std::string& filename,
+      std::function<void(int)> progress) = 0;
+  virtual bool QueryFirmwareUpdateResults(uint8_t* main_result,
+                                          uint8_t* pos_result,
+                                          uint8_t* tac_result,
+                                          uint8_t* motor_result) = 0;
 };
 
 }  // namespace internal

@@ -1,16 +1,15 @@
 #ifndef GHAND_TYPES_H_
 #define GHAND_TYPES_H_
 
-#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
 
-#include "export.h"
+#include "ghand/export.h"
 
 namespace ghand {
 
-// ===== Hand Type Definitions =====
+// Hand type definitions
 enum class HandType : uint8_t {
   NONE,
   LEFT,
@@ -24,7 +23,7 @@ enum class HandType : uint8_t {
  */
 std::string GHAND_API ToString(HandType type);
 
-// ===== Finger Type Definitions =====
+// Finger type definitions
 enum class FingerType : uint8_t {
   THUMB,
   FF,
@@ -40,7 +39,7 @@ enum class FingerType : uint8_t {
  */
 std::string GHAND_API ToString(FingerType finger);
 
-// ===== Force Data Structure =====
+// Force data structure
 struct Force {
   float x;
   float y;
@@ -124,7 +123,7 @@ enum class JointId : uint8_t {
  */
 std::string GHAND_API ToString(JointId id);
 
-// ===== Product Type Definitions =====
+// Product type definitions
 enum class ProductType : uint8_t { G5, AUTO };
 
 /**
@@ -133,18 +132,37 @@ enum class ProductType : uint8_t { G5, AUTO };
  */
 std::string GHAND_API ToString(ProductType type);
 
-// ===== Communication Type Definitions =====
+// Communication type definitions
 enum class CommType : uint8_t { ETHERCAT, CANFD, RS485 };
 
-// ===== Control Mode Definitions =====
+// Control mode definitions
 enum class ControlMode : uint8_t { POSITION = 0, TORQUE = 1, SPEED = 2 };
 
-// ===== Device Info Structure =====
+// Firmware update error codes
+enum class FirmwareUpdateError : int {
+  SUCCESS = 0,
+  PREPARE_COMMAND_FAILED,   // Write 0x5A pre-check failed
+  ENTER_BOOT_MODE_FAILED,   // Enter BOOT state failed
+  FOE_TRANSFER_FAILED,      // FOE transfer failed
+  MAIN_CONTROLLER_FAILED,   // Main controller MCU upgrade failed
+  POSITION_SENSOR_FAILED,   // Position sensor MCU upgrade failed
+  TACTILE_SENSOR_FAILED,    // Tactile sensor MCU upgrade failed
+  MOTOR_DRIVER_FAILED,      // Motor driver MCU upgrade failed
+  RECONNECT_FAILED,  // Reconnect after update failed
+  // Communication protocol does not support firmware update
+  NOT_SUPPORTED,
+  QUERY_FAILED,  // Failed to query upgrade results
+};
+
+// Device info structure
 struct DeviceInfo {
   std::string device_name;
   std::string hardware_version;
-  std::string software_version;
+  std::string software_version;       // Main controller firmware version
+  std::string position_sensor_version;
+  std::string tactile_sensor_version;
   std::string motor_driver_version;
+  std::string firmware_package_version;
   unsigned int serial_number;
 };
 
@@ -161,8 +179,9 @@ struct HandState {
  * @brief Sensor data for a single tactile region
  */
 struct RegionTactile {
-  const char* region_name;                // Region name (provided by device)
-  bool state;                             // Sensor state (true=normal, false=abnormal)
+  const char* region_name;  // Region name (provided by device)
+  // Sensor state (true=normal, false=abnormal)
+  bool state;
   Force resultant_force;                  // Resultant force data
   std::vector<Force> distributed_forces;  // Distributed force data
 };
@@ -202,7 +221,7 @@ struct Joint {
   int8_t torque;
 };
 
-// ===== HandState / Joint Query Functions =====
+// HandState / Joint query functions
 
 inline bool IsNormal(const HandState& hs) {
   return (hs.state == State::STOPPED || hs.state == State::RUNNING) &&
